@@ -1,0 +1,44 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+*.auto.tfvars
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+secrets.yaml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+.env
+.env.local
+
+# ArgoCD
+argocd-server.yaml
+argocd-repo-server.yaml
+
+# Atlantis
+atlantis.log
+atlantis.db
+
+# Docker
+.docker/

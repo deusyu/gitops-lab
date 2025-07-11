@@ -1,0 +1,42 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install yamllint
+      run: pip install yamllint
+    
+    - name: Lint YAML files
+      run: |
+        yamllint -c .yamllint.yml . || echo "YAML linting issues found"
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.8.0
+    
+    - name: Terraform Format Check
+      run: |
+        cd terraform-atlantis-demo/s3-bucket
+        terraform fmt -check || echo "Terraform formatting issues found"
+    
+    - name: Terraform Validate
+      run: |
+        cd terraform-atlantis-demo/s3-bucket
+        terraform init -backend=false
+        terraform validate

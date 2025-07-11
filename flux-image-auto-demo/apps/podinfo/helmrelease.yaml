@@ -1,0 +1,83 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: podinfo
+  namespace: flux-system
+spec:
+  releaseName: podinfo
+  chart:
+    spec:
+      chart: podinfo
+      sourceRef:
+        kind: HelmRepository
+        name: podinfo
+        namespace: flux-system
+      version: "6.4.0"
+  interval: 10m
+  targetNamespace: default
+  values:
+    image:
+      repository: ghcr.io/stefanprodan/podinfo
+      tag: 6.4.0 # {"$imagepolicy": "flux-system:podinfo:tag"}
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: podinfo
+  namespace: flux-system
+spec:
+  interval: 10m
+  url: https://stefanprodan.github.io/podinfo
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: podinfo
+  namespace: flux-system
+spec:
+  image: ghcr.io/stefanprodan/podinfo
+  interval: 10m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: podinfo
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: podinfo
+  policy:
+    semver:
+      range: ">=6.0.0"
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta1
+kind: ImageUpdateAutomation
+metadata:
+  name: podinfo
+  namespace: flux-system
+spec:
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  interval: 10m
+  update:
+    strategy: Setters
+    path: "./flux-image-auto-demo/apps/podinfo"
+  commit:
+    author:
+      email: flux@example.com
+      name: Flux Bot
+    messageTemplate: |
+      [ci skip] Update podinfo image to {{range .Updated.Images}}{{println .}}{{end}}

@@ -1,91 +1,108 @@
-GitOps-Lab 🛠️🚀
+# GitOps-Lab 
 
-Hands-on GitOps demos (Argo CD · Flux v2 · Atlantis + Terraform) bootstrapped with Cursor Agent. Fork / clone / run — each demo spins up in ≤10 min on a laptop.
+A comprehensive GitOps learning laboratory featuring multiple tools and workflows for modern DevOps practices.
 
-⸻
+## 📋 Overview
 
-📁 Repository Layout
+This repository contains hands-on demonstrations of popular GitOps tools and patterns:
 
-.gitignore                → Ignore rules for Terraform, K8s, etc.
-LICENSE                   → MIT
-Makefile                  → One-liners: bootstrap / destroy / lint
+- **Kind + ArgoCD**: Kubernetes-native GitOps with declarative deployments
+- **Terraform + Atlantis**: Infrastructure as Code with automated PR workflows  
+- **Flux**: GitOps toolkit with automatic image updates
 
-.github/workflows/
-└─ lint.yml               → yamllint + terraform fmt / validate
+## 🎯 Quick Start
 
-kind-argocd-demo/         → Kind cluster + Argo CD (guestbook app)
-terraform-atlantis-demo/  → Atlantis container managing TF to AWS/localstack
-flux-image-auto-demo/     → Flux v2 bootstrap + ImageUpdate automation
+```bash
+# Clone the repository
+git clone https://github.com/your-org/gitops-lab.git
+cd gitops-lab
 
-hack/                     → Helper scripts (e.g. bump-image.sh)
+# Start Kind cluster with ArgoCD
+make kind-argocd
 
+# Verify ArgoCD is running
+kubectl get pods -n argocd
+```
 
-⸻
+## 🛠️ Available Demos
 
-⚡ Quick Start (all demos)
+### 1. Kind + ArgoCD Demo
+- Local Kubernetes cluster with ArgoCD
+- Sample guestbook application
+- Declarative GitOps workflows
 
-Prerequisites: Docker ≥ 24 · kubectl · kind · Terraform 1.8 · flux CLI · (optional) AWS CLI + credentials. macOS/Linux both supported.
+### 2. Terraform + Atlantis Demo
+- Infrastructure as Code automation
+- PR-based Terraform workflows
+- AWS S3 bucket provisioning example
 
-# 1. Clone & enter
-$ git clone https://github.com/<you>/gitops-lab.git && cd gitops-lab
+### 3. Flux Image Auto-Update Demo
+- Automatic image updates
+- Helm-based deployments
+- GitOps automation with Flux
 
-# 2. Bring up the Kind + Argo CD demo (⏱ 3-5 min)
-$ make kind-argocd
+## 📚 Make Commands
 
-# 3. Verify GitOps sync
-$ kubectl -n guestbook get pods   # See guestbook pods running
+```bash
+# Kind + ArgoCD
+make kind-argocd          # Start Kind cluster with ArgoCD
+make argocd-port-forward  # Port-forward ArgoCD UI (localhost:8080)
 
-Demo	Bootstrap	Verify	Destroy
-Kind + Argo CD	make kind-argocd	Edit apps/guestbook/deployment.yaml image tag → commit → Argo auto-sync	make kind-destroy
-Atlantis + Terraform	make atlantis-up	Create PR editing s3-bucket/main.tf → Atlantis plan/apply	make atlantis-down
-Flux v2 Image Automation	make flux-bootstrap	Run hack/bump-image.sh → Flux raises PR → merge → auto rollout	make flux-destroy
+# Atlantis
+make atlantis-up          # Start Atlantis with Docker Compose
+make atlantis-down        # Stop Atlantis
 
-⏳ Hint: Each Make target prints the exact commands so you can learn & tweak.
+# Flux
+make flux-bootstrap       # Bootstrap Flux in Kind cluster
+make flux-reconcile       # Force reconciliation
 
-⸻
+# Utilities
+make destroy              # Clean up all resources
+make lint                 # Run linting checks
+```
 
-🧰 Demo Details
+## 🔧 Prerequisites
 
-1. Kind + Argo CD
-	•	Single-node Kind cluster (kind-cluster.yaml).
-	•	Argo CD installed via upstream manifests.
-	•	Sample guestbook app with Kustomize overlays — change image/tag and watch Argo reconcile.
+- Docker
+- Kind
+- kubectl
+- Terraform (for Atlantis demo)
+- Flux CLI (for Flux demo)
 
-2. Atlantis + Terraform
-	•	docker-compose.yaml spins Atlantis + nginx reverse proxy.
-	•	.atlantis.yaml defines workspaces; PR → plan comment → atlantis apply comment.
-	•	Default module creates an S3 bucket (swap to localstack if no AWS creds).
+## 📖 Learning Path
 
-3. Flux v2 Image Automation
-	•	flux bootstrap github … creates flux-system/ and pushes back to repo.
-	•	podinfo HelmRelease; Image Update Controller watches Docker Hub tags, opens PRs.
-	•	Merge PR → Flux sync → rollout.
+1. **Start with Kind + ArgoCD**: Learn declarative GitOps basics
+2. **Explore Atlantis**: Understand Infrastructure as Code automation
+3. **Try Flux**: Experience advanced GitOps with auto-updates
 
-⸻
+## 🤝 Contributing
 
-🛡  Security & Cost Notes
-	•	Secrets → never commit raw creds — use Sealed Secrets / SOPS if moving to prod.
-	•	Atlantis role is least privilege (create/read S3 only).
-	•	All cloud resources live in us-east-1 and tag "gitops-lab-demo:true"; run make atlantis-down to avoid charges.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-⸻
+## 📝 License
 
-🧪 Lint & Drift Checks
-	•	GitHub Actions lint.yml runs on every PR / push: yamllint + terraform fmt/validate.
-	•	(Optional) nightly drift-plan.yml shows infra drift and comments on latest commit.
+MIT License - see [LICENSE](LICENSE) file for details.
 
-⸻
+## 🆘 Troubleshooting
 
-🤝 Contributing
+### Common Issues
 
-Pull requests are welcome! Feel free to open issues for bugs & feature ideas. For larger changes, open a discussion first.
+- **Kind cluster not starting**: Check Docker is running
+- **ArgoCD UI not accessible**: Ensure port-forward is active
+- **Atlantis webhooks**: Configure GitHub webhook URL correctly
 
-Dev Container / Codespaces
+### Useful Commands
 
-A .devcontainer.json is coming — run the demos entirely in browser.
+```bash
+# Check Kind cluster status
+kind get clusters
 
-⸻
+# View ArgoCD admin password
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 
-📜 License
-
-MIT © 2025 Rainman Deus — do what you want, have fun, give credit.
+# Reset everything
+make destroy && make kind-argocd
+```

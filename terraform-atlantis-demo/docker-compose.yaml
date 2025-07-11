@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  atlantis:
+    image: runatlantis/atlantis:latest
+    container_name: atlantis
+    ports:
+      - "4141:4141"
+    environment:
+      - ATLANTIS_REPO_ALLOWLIST=github.com/your-org/gitops-lab
+      - ATLANTIS_GH_USER=${GITHUB_USER:-your-github-username}
+      - ATLANTIS_GH_TOKEN=${GITHUB_TOKEN:-your-token}
+      - ATLANTIS_GH_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET:-your-secret}
+      - ATLANTIS_DATA_DIR=/atlantis-data
+      - ATLANTIS_PORT=4141
+    volumes:
+      - atlantis-data:/atlantis-data
+      - ./:/workspace:ro
+    working_dir: /workspace
+    command: server
+    depends_on:
+      - nginx
+
+  nginx:
+    image: nginx:alpine
+    container_name: atlantis-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - atlantis
+
+volumes:
+  atlantis-data:
