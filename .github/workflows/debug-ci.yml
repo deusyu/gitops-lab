@@ -1,0 +1,86 @@
+name: Debug CI
+
+on:
+  # pull_request:
+  #   branches: [main]
+  workflow_dispatch:
+
+jobs:
+  debug:
+    name: Debug Environment
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Environment Info
+      run: |
+        echo "=== Environment Information ==="
+        echo "OS: $(uname -a)"
+        echo "Python: $(python3 --version)"
+        echo "Python3 path: $(which python3)"
+        echo "pip3 version: $(pip3 --version)"
+        echo "Available in PATH:"
+        echo $PATH
+        echo ""
+
+    - name: Check available tools
+      run: |
+        echo "=== Available Tools ==="
+        command -v python3 && echo "✅ python3" || echo "❌ python3"
+        command -v pip3 && echo "✅ pip3" || echo "❌ pip3"
+        command -v pip && echo "✅ pip" || echo "❌ pip"
+        command -v apt-get && echo "✅ apt-get" || echo "❌ apt-get"
+        command -v make && echo "✅ make" || echo "❌ make"
+        echo ""
+
+    - name: Test pip install
+      run: |
+        echo "=== Testing pip install ==="
+        echo "Trying pip install yamllint..."
+        pip install yamllint 2>&1 || echo "Regular pip install failed"
+        echo ""
+        echo "Trying pip install with --break-system-packages..."
+        pip install yamllint --break-system-packages 2>&1 || echo "pip with --break-system-packages failed"
+        echo ""
+        echo "Trying apt install..."
+        sudo apt-get update > /dev/null 2>&1
+        sudo apt-get install -y python3-yamllint 2>&1 || echo "apt install failed"
+        echo ""
+
+    - name: Check installed yamllint
+      run: |
+        echo "=== Checking yamllint installation ==="
+        command -v yamllint && echo "✅ yamllint found in PATH" || echo "❌ yamllint not in PATH"
+        ls -la ~/.local/bin/ 2>/dev/null || echo "~/.local/bin/ not found"
+        echo ""
+
+    - name: Test basic file operations
+      run: |
+        echo "=== Testing basic file operations ==="
+        ls -la
+        echo ""
+        echo "Checking key files exist:"
+        test -f Makefile && echo "✅ Makefile" || echo "❌ Makefile"
+        test -f .yamllint.yml && echo "✅ .yamllint.yml" || echo "❌ .yamllint.yml"
+        test -d .github/workflows && echo "✅ .github/workflows/" || echo "❌ .github/workflows/"
+        echo ""
+
+    - name: Test simple validation
+      run: |
+        echo "=== Testing simple validation ==="
+        echo "Testing make help..."
+        make help 2>&1 | head -5
+        echo ""
+        echo "Testing Python YAML loading..."
+        python3 -c "import yaml; print('YAML module works')"
+        echo ""
+        echo "Testing shell syntax check..."
+        bash -n scripts/validate-env.sh && echo "✅ validate-env.sh syntax OK" || echo "❌ validate-env.sh syntax error"
+        echo ""
+
+    - name: Final Summary
+      run: |
+        echo "=== Debug Summary ==="
+        echo "This debug run completed successfully!"
+        echo "If this passes but main CI fails, the issue is likely in the complex tool installations or configurations."
