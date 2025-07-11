@@ -1,10 +1,14 @@
-name: Lint
+# This file has been replaced by ci.yml
+# Keeping this file temporarily to avoid breaking existing workflows
+
+name: Lint (Deprecated)
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  # Disabled to avoid conflicts with main ci.yml
+  # push:
+  #   branches: [ main ]
+  # pull_request:
+  #   branches: [ main ]
 
 jobs:
   lint:

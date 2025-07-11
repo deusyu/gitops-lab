@@ -22,7 +22,11 @@ check_env_var() {
     local required="${2:-false}"
     local description="${3:-}"
     
-    if [ -z "${!var_name:-}" ]; then
+    # Use eval to safely check variable
+    local var_value
+    var_value=$(eval echo \$"$var_name" 2>/dev/null || echo "")
+    
+    if [ -z "$var_value" ]; then
         if [ "$required" = "true" ]; then
             echo "❌ Required environment variable '$var_name' is not set"
             [ -n "$description" ] && echo "   $description"

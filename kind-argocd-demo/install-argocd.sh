@@ -51,7 +51,7 @@ echo "⏳ Waiting for ArgoCD pods to be ready..."
 kubectl wait --for=condition=ready --timeout=300s pod -l app.kubernetes.io/name=argocd-server -n argocd
 
 # Deploy ArgoCD Application for guestbook (GitOps way)
-echo "� Creating ArgoCD Application for guestbook..."
+echo "🚀 Creating ArgoCD Application for guestbook..."
 if kubectl apply -f apps/guestbook-app.yaml; then
     echo "⏳ Waiting for ArgoCD to sync the application..."
     
