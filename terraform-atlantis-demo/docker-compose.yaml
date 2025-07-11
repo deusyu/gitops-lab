@@ -7,10 +7,10 @@ services:
     ports:
       - "4141:4141"
     environment:
-      - ATLANTIS_REPO_ALLOWLIST=github.com/your-org/gitops-lab
-      - ATLANTIS_GH_USER=${GITHUB_USER:-your-github-username}
-      - ATLANTIS_GH_TOKEN=${GITHUB_TOKEN:-your-token}
-      - ATLANTIS_GH_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET:-your-secret}
+      - ATLANTIS_REPO_ALLOWLIST=${ATLANTIS_REPO_ALLOWLIST:-github.com/*/*}
+      - ATLANTIS_GH_USER=${GITHUB_USER:?Please set GITHUB_USER environment variable}
+      - ATLANTIS_GH_TOKEN=${GITHUB_TOKEN:?Please set GITHUB_TOKEN environment variable}
+      - ATLANTIS_GH_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET:-atlantis-webhook-secret}
       - ATLANTIS_DATA_DIR=/atlantis-data
       - ATLANTIS_PORT=4141
     volumes:
