@@ -5,6 +5,16 @@ help: ## Show this help message
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
+validate-env: ## Validate environment configuration and dependencies
+	@echo "🔍 Validating environment..."
+	@chmod +x scripts/validate-env.sh
+	@./scripts/validate-env.sh
+
+integration-test: ## Run integration tests for GitOps lab
+	@echo "🧪 Running integration tests..."
+	@chmod +x scripts/integration-test.sh
+	@./scripts/integration-test.sh
+
 kind-argocd: ## Start Kind cluster with ArgoCD
 	@echo "🚀 Starting Kind cluster with ArgoCD..."
 	cd kind-argocd-demo && ./install-argocd.sh
@@ -30,10 +40,15 @@ flux-bootstrap: ## Bootstrap Flux in Kind cluster
 		echo "❌ Kind cluster not found. Run 'make kind-argocd' first"; \
 		exit 1; \
 	fi
+	@if [ -z "$(GITHUB_OWNER)" ] || [ -z "$(GITHUB_REPO)" ]; then \
+		echo "❌ Please set GITHUB_OWNER and GITHUB_REPO environment variables"; \
+		echo "Example: GITHUB_OWNER=myorg GITHUB_REPO=gitops-lab make flux-bootstrap"; \
+		exit 1; \
+	fi
 	cd flux-image-auto-demo && \
 	flux bootstrap github \
-		--owner=your-org \
-		--repository=gitops-lab \
+		--owner=$(GITHUB_OWNER) \
+		--repository=$(GITHUB_REPO) \
 		--branch=main \
 		--path=./flux-image-auto-demo/clusters/local \
 		--personal || echo "Note: Configure your GitHub token with GITHUB_TOKEN env var"

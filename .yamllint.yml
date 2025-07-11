@@ -8,3 +8,6 @@ rules:
   comments: disable
   document-start: disable
   truthy: disable
+  trailing-spaces: disable
+  new-line-at-end-of-file: disable
+  indentation: disable

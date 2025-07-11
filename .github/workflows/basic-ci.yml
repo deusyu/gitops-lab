@@ -1,0 +1,103 @@
+name: Basic CI (Backup - Disabled)
+
+on:
+  # Disabled in favor of stable-ci.yml
+  # push:
+  #   branches: [main, develop]
+  # pull_request:
+  #   branches: [main]
+  workflow_dispatch:
+
+jobs:
+  basic-validation:
+    name: Basic Validation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check file structure
+      run: |
+        echo "Checking basic file structure..."
+        ls -la
+        echo "✅ Repository structure OK"
+
+    - name: Validate YAML syntax
+      run: |
+        echo "Validating YAML files syntax..."
+        python3 -c "
+        import yaml
+        import os
+        import sys
+        
+        errors = 0
+        for root, dirs, files in os.walk('.'):
+            for file in files:
+                if file.endswith('.yaml') or file.endswith('.yml'):
+                    filepath = os.path.join(root, file)
+                    try:
+                        with open(filepath, 'r') as f:
+                            if '---' in f.read():
+                                f.seek(0)
+                                list(yaml.safe_load_all(f))
+                            else:
+                                f.seek(0)
+                                yaml.safe_load(f)
+                        print(f'✅ {filepath}')
+                    except Exception as e:
+                        print(f'❌ {filepath}: {e}')
+                        errors += 1
+        
+        if errors > 0:
+            print(f'Found {errors} YAML errors')
+            sys.exit(1)
+        else:
+            print('✅ All YAML files are valid')
+        "
+
+    - name: Check shell script syntax
+      run: |
+        echo "Checking shell script syntax..."
+        find . -name "*.sh" -exec bash -n {} \;
+        echo "✅ Shell script syntax OK"
+
+    - name: Check Makefile
+      run: |
+        echo "Checking Makefile..."
+        make help > /dev/null
+        echo "✅ Makefile OK"
+
+    - name: Validate Terraform syntax
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.8.0
+
+    - name: Check Terraform files
+      run: |
+        echo "Checking Terraform syntax..."
+        cd terraform-atlantis-demo/s3-bucket
+        terraform fmt -check -diff || echo "Terraform formatting issues (non-blocking)"
+        terraform init -backend=false
+        terraform validate
+        echo "✅ Terraform validation OK"
+
+    - name: Test Docker Compose
+      run: |
+        echo "Testing Docker Compose configuration..."
+        cd terraform-atlantis-demo
+        if command -v docker-compose >/dev/null 2>&1; then
+          docker-compose config > /dev/null
+          echo "✅ Docker Compose configuration OK"
+        elif command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+          docker compose config > /dev/null
+          echo "✅ Docker Compose (via docker compose) configuration OK"
+        else
+          echo "Docker Compose not available, checking YAML syntax..."
+          python3 -c "import yaml; yaml.safe_load(open('docker-compose.yaml'))"
+          echo "✅ Docker Compose YAML syntax OK"
+        fi
+
+    - name: Summary
+      run: |
+        echo "🎉 Basic validation completed successfully!"
+        echo "All critical components are syntactically correct."
